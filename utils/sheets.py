@@ -11,40 +11,40 @@ def get_gspread_client():
 
 # ✅ Open the sheet using sheet ID from secrets
 def load_sheet():
-    print("🔄 Loading sheet from Streamlit Cloud secrets...")
+    st.write("🔄 Loading sheet from Streamlit Cloud secrets...")
     gc = get_gspread_client()
     sheet_id = st.secrets["GOOGLE_SHEET_ID"]
     sheet = gc.open_by_key(sheet_id)
-    print("✅ Sheet loaded successfully.")
+    st.write("✅ Sheet loaded successfully.")
     return sheet
 
 # ✅ Cached Meta info for 1 hour
 @st.cache_data(ttl=3600)
 def load_meta_info():
-    print("🔄 Loading Meta tab info...")
+    st.write("🔄 Loading Meta tab info...")
     sheet = load_sheet()
     try:
         meta = sheet.worksheet("Meta")
         data = meta.get_all_records()
-        print(f"📋 Meta rows found: {len(data)}")
+        st.write(f"📋 Meta rows found: {len(data)}")
 
         tabs = sorted(set(d["Team Name"] for d in data if d.get("Team Name")))
         sites = sorted(set(d["Site Name"] for d in data if d.get("Site Name")))
-        print(f"📌 Loaded {len(tabs)} team tabs and {len(sites)} site names.")
+        st.write(f"📌 Loaded {len(tabs)} team tabs and {len(sites)} site names.")
         return tabs, sites
     except Exception as e:
-        print(f"❌ Error loading Meta tab: {e}")
+        st.write(f"❌ Error loading Meta tab: {e}")
         return [], []
 
 # ✅ Cached worksheet date columns for 1 hour
 @st.cache_data(ttl=3600)
 def load_sheet_dates():
-    print("🔄 Scanning worksheets for date columns...")
+    st.write("🔄 Scanning worksheets for date columns...")
     sheet = load_sheet()
     all_dates = {}
 
     for worksheet in sheet.worksheets():
-        print(f"🧾 Checking tab: {worksheet.title}")
+        st.write(f"🧾 Checking tab: {worksheet.title}")
         values = worksheet.row_values(1)
         for col_idx, val in enumerate(values[3:], start=4):  # Start from column D
             if val:
@@ -54,27 +54,27 @@ def load_sheet_dates():
                 except Exception:
                     continue
 
-    print(f"📅 Found {len(all_dates)} unique dates.")
+    st.write(f"📅 Found {len(all_dates)} unique dates.")
     return list(all_dates.keys())
 
 def find_site_row(worksheet, site_name):
-    print(f"🔍 Searching for site: {site_name}")
+    st.write(f"🔍 Searching for site: {site_name}")
     site_col = worksheet.col_values(2)[2:]  # B3 onwards
     match, score, idx = process.extractOne(site_name.lower(), [s.lower() for s in site_col])
-    print(f"🧭 Matched '{site_name}' to '{match}' with score {score}")
+    st.write(f"🧭 Matched '{site_name}' to '{match}' with score {score}")
     if score > 80:
         return idx + 3  # Adjust for starting at row 3
     return None
 
 def find_date_columns(worksheet, target_date_str):
-    print(f"🔍 Looking for date: {target_date_str}")
+    st.write(f"🔍 Looking for date: {target_date_str}")
     row = worksheet.row_values(1)
     for col in range(3, len(row)):  # Start from D (index 3)
         val = row[col]
         if val.strip() == target_date_str.strip():
-            print(f"✅ Date '{target_date_str}' found at columns {col + 1} (M), {col + 2} (H)")
+            st.write(f"✅ Date '{target_date_str}' found at columns {col + 1} (M), {col + 2} (H)")
             return col + 1, col + 2
-    print(f"❌ Date '{target_date_str}' not found.")
+    st.write(f"❌ Date '{target_date_str}' not found.")
     return None, None
 
 def write_attendance(sheet, entries):
@@ -90,7 +90,7 @@ def write_attendance(sheet, entries):
             worksheet = sheet.worksheet(tab)
         except Exception as e:
             msg = f"❌ Tab '{tab}' not found: {e}"
-            print(msg)
+            st.write(msg)
             success_messages.append(msg)
             continue
 
@@ -98,7 +98,7 @@ def write_attendance(sheet, entries):
             data = worksheet.get_all_values()
         except Exception as e:
             msg = f"❌ Failed to load data from tab '{tab}': {e}"
-            print(msg)
+            st.write(msg)
             success_messages.append(msg)
             continue
 
@@ -114,7 +114,7 @@ def write_attendance(sheet, entries):
 
         if not row:
             msg = f"❌ Site '{site}' not found in tab '{tab}'"
-            print(msg)
+            st.write(msg)
             success_messages.append(msg)
             continue
 
@@ -124,7 +124,7 @@ def write_attendance(sheet, entries):
             h_col = m_col + 1
         except ValueError:
             msg = f"❌ Date '{date}' not found in headers for tab '{tab}'"
-            print(msg)
+            st.write(msg)
             success_messages.append(msg)
             continue
 
@@ -133,11 +133,11 @@ def write_attendance(sheet, entries):
             try:
                 worksheet.update_cell(row, m_col, attendance["M"])
                 msg = f"✅ Updated M ({attendance['M']}) at row {row}, col {m_col} in '{tab}'"
-                print(msg)
+                st.write(msg)
                 success_messages.append(msg)
             except Exception as e:
                 msg = f"❌ Failed to update M at row {row}, col {m_col}: {e}"
-                print(msg)
+                st.write(msg)
                 success_messages.append(msg)
 
         # Update H if exists
@@ -145,11 +145,11 @@ def write_attendance(sheet, entries):
             try:
                 worksheet.update_cell(row, h_col, attendance["H"])
                 msg = f"✅ Updated H ({attendance['H']}) at row {row}, col {h_col} in '{tab}'"
-                print(msg)
+                st.write(msg)
                 success_messages.append(msg)
             except Exception as e:
                 msg = f"❌ Failed to update H at row {row}, col {h_col}: {e}"
-                print(msg)
+                st.write(msg)
                 success_messages.append(msg)
 
     return "\n".join(success_messages)

@@ -9,6 +9,29 @@ import logging
 # ✅ Setup logger
 logger = logging.getLogger(__name__)
 
+# 📌 Added for dynamic month support
+@st.cache_data(ttl=3600)
+def get_month_to_sheetid_map():
+    client = get_gspread_client()  # ✅ Use correct scoped client
+    master_sheet_id = st.secrets["MASTER_SHEET_ID"]
+    sheet = client.open_by_key(master_sheet_id).sheet1
+
+    data = sheet.get_all_values()
+    header = data[0]
+    rows = data[1:]
+
+    month_col = header.index("Month")
+    sheetid_col = header.index("Sheet ID")
+
+    month_map = {}
+    for row in rows:
+        if len(row) > max(month_col, sheetid_col):
+            month = row[month_col].strip()
+            sheet_id = row[sheetid_col].strip()
+            if month and sheet_id:
+                month_map[month] = sheet_id
+    return month_map
+
 # ✅ Auth using Streamlit secrets
 def get_gspread_client():
     scopes = [
@@ -26,18 +49,23 @@ def get_gspread_client():
     creds = Credentials.from_service_account_info(service_account_info, scopes=scopes)
     return gspread.authorize(creds)
 
-def load_sheet():
-    logger.info("🔄 Loading sheet from Streamlit Cloud secrets...")
+# 📌 Modified: Now accepts optional sheet_id (default uses static one)
+def load_sheet(sheet_id=None):
+    logger.info("🔄 Loading sheet...")
     gc = get_gspread_client()
-    sheet_id = st.secrets["GOOGLE_SHEET_ID"]
+    if not sheet_id:
+        sheet_id = st.secrets["GOOGLE_SHEET_ID"]
     sheet = gc.open_by_key(sheet_id)
     logger.info("✅ Sheet loaded successfully.")
     return sheet
 
+
 @st.cache_data(ttl=3600)
-def load_meta_info():
+def load_meta_info(_sheet=None):
+    sheet = _sheet
     logger.info("🔄 Loading Meta tab info...")
-    sheet = load_sheet()
+    if sheet is None:
+        sheet = load_sheet()
     try:
         meta = sheet.worksheet("Meta")
         data = meta.get_all_records()
@@ -51,10 +79,13 @@ def load_meta_info():
         logger.error(f"❌ Error loading Meta tab: {e}")
         return [], []
 
+
 @st.cache_data(ttl=3600)
-def load_sheet_dates():
+def load_sheet_dates(_sheet=None):
+    sheet = _sheet
     logger.info("🔄 Scanning worksheets for date columns...")
-    sheet = load_sheet()
+    if sheet is None:
+        sheet = load_sheet()
     all_dates = {}
 
     for worksheet in sheet.worksheets():
@@ -71,6 +102,7 @@ def load_sheet_dates():
     logger.info(f"📅 Found {len(all_dates)} unique dates.")
     return list(all_dates.keys())
 
+
 def find_site_row(worksheet, site_name):
     logger.info(f"🔍 Searching for site: {site_name}")
     site_col = worksheet.col_values(2)[2:]
@@ -79,6 +111,7 @@ def find_site_row(worksheet, site_name):
     if score > 80:
         return idx + 3
     return None
+
 
 def find_date_columns(worksheet, target_date_str):
     logger.info(f"🔍 Looking for date: {target_date_str}")
@@ -90,6 +123,7 @@ def find_date_columns(worksheet, target_date_str):
             return col + 1, col + 2
     logger.info(f"❌ Date '{target_date_str}' not found.")
     return None, None
+
 
 def write_attendance(sheet, entries):
     success_messages = []

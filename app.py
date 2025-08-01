@@ -4,6 +4,8 @@ from utils.sheets import load_meta_info, load_sheet_dates, write_attendance, loa
 st.set_page_config(page_title="Labour Entry Bot", layout="wide")
 
 st.title("👷 Labour Attendance Entry")
+# ✅ Confirm secrets load (for first-time cloud deploy debug)
+
 
 # ✅ Load dropdown options (cached)
 meta_tabs, meta_sites = load_meta_info()

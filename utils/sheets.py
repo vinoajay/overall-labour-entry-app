@@ -1,22 +1,24 @@
-import os
 import datetime
 import gspread
-from dotenv import load_dotenv
 from rapidfuzz import process
-import streamlit as st  # Required for caching
+import streamlit as st
+from google.oauth2.service_account import Credentials
 
-load_dotenv()
-SHEET_ID = os.getenv("GOOGLE_SHEET_ID")
+# ✅ Auth using Streamlit secrets
+def get_gspread_client():
+    creds = Credentials.from_service_account_info(st.secrets["google_service_account"])
+    return gspread.authorize(creds)
 
-# ⚙️ Sheet loading - not cached (used once and passed around)
+# ✅ Open the sheet using sheet ID from secrets
 def load_sheet():
-    print("🔄 Loading sheet...")
-    gc = gspread.service_account(filename="credentials.json")
-    sheet = gc.open_by_key(SHEET_ID)
+    print("🔄 Loading sheet from Streamlit Cloud secrets...")
+    gc = get_gspread_client()
+    sheet_id = st.secrets["GOOGLE_SHEET_ID"]
+    sheet = gc.open_by_key(sheet_id)
     print("✅ Sheet loaded successfully.")
     return sheet
 
-# ✅ Cached for 1 hour to reduce quota usage
+# ✅ Cached Meta info for 1 hour
 @st.cache_data(ttl=3600)
 def load_meta_info():
     print("🔄 Loading Meta tab info...")
@@ -34,7 +36,7 @@ def load_meta_info():
         print(f"❌ Error loading Meta tab: {e}")
         return [], []
 
-# ✅ Also cached, only recalculates if cache expires
+# ✅ Cached worksheet date columns for 1 hour
 @st.cache_data(ttl=3600)
 def load_sheet_dates():
     print("🔄 Scanning worksheets for date columns...")
@@ -103,11 +105,10 @@ def write_attendance(sheet, entries):
         headers = data[0]
         rows = data[1:]
 
-        # Find row for site (use fuzzy match if needed)
+        # Find row for site
         row = None
         for idx, row_data in enumerate(rows, start=2):  # 1-based index + header
             if len(row_data) > 1 and row_data[1].strip().lower() == site.strip().lower():
-
                 row = idx
                 break
 

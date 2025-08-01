@@ -1,28 +1,28 @@
-# Core LLM + LangChain
+# 🔮 Core LLM + LangChain
 openai
 langchain
 langchain-community
 
-# Vector store & embeddings
+# 📦 Vector store & embeddings
 chromadb
 tiktoken
 faiss-cpu
 
-# Google Sheets
+# 📊 Google Sheets (Streamlit-friendly)
 gspread
-oauth2client
+google-auth  # ✅ Replaces oauth2client (which is deprecated)
 
-# Utilities
-python-dotenv
+# 🧰 Utilities
+python-dotenv  # optional, not needed if using st.secrets
 rapidfuzz
-pydantic<2.0  # Ensure compatibility with LangChain <0.2
+pydantic<2.0  # ✅ Required for LangChain compatibility
 
-# Streamlit App
+# 🖥️ Streamlit App
 streamlit
 
-# Optional: if you use date parsing or text processing
+# 🕰️ Optional date & text processing
 dateparser
 
-# Audio or speech (if used for other parts of your voice bot)
+# 🔊 Audio/Speech (for voice bots, optional)
 pydub
-gtts
+gTTS

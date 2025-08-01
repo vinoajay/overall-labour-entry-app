@@ -1,4 +1,19 @@
-".env" 
-"credentials.json" 
-.env 
-credentials.json 
+# Ignore virtual environment
+venv/
+.venv/
+
+# Ignore Python cache files
+__pycache__/
+*.py[cod]
+*.so
+
+# Ignore environment/config files
+.env
+credentials.json
+
+# Ignore OS junk
+.DS_Store
+Thumbs.db
+
+# VS Code settings (optional)
+.vscode/

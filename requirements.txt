@@ -1,0 +1,28 @@
+# Core LLM + LangChain
+openai
+langchain
+langchain-community
+
+# Vector store & embeddings
+chromadb
+tiktoken
+faiss-cpu
+
+# Google Sheets
+gspread
+oauth2client
+
+# Utilities
+python-dotenv
+rapidfuzz
+pydantic<2.0  # Ensure compatibility with LangChain <0.2
+
+# Streamlit App
+streamlit
+
+# Optional: if you use date parsing or text processing
+dateparser
+
+# Audio or speech (if used for other parts of your voice bot)
+pydub
+gtts

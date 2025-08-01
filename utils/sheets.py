@@ -6,7 +6,14 @@ from google.oauth2.service_account import Credentials
 
 # ✅ Auth using Streamlit secrets
 def get_gspread_client():
-    creds = Credentials.from_service_account_info(st.secrets["google_service_account"])
+    scopes = [
+        "https://www.googleapis.com/auth/spreadsheets",
+        "https://www.googleapis.com/auth/drive"
+    ]
+    creds = Credentials.from_service_account_info(
+        st.secrets["GOOGLE_SERVICE_ACCOUNT"],
+        scopes=scopes
+    )
     return gspread.authorize(creds)
 
 # ✅ Open the sheet using sheet ID from secrets

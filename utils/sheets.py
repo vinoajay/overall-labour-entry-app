@@ -3,6 +3,7 @@ import gspread
 from rapidfuzz import process
 import streamlit as st
 from google.oauth2.service_account import Credentials
+import json
 
 # ✅ Auth using Streamlit secrets
 def get_gspread_client():
@@ -10,10 +11,17 @@ def get_gspread_client():
         "https://www.googleapis.com/auth/spreadsheets",
         "https://www.googleapis.com/auth/drive"
     ]
-    creds = Credentials.from_service_account_info(
-        st.secrets["GOOGLE_SERVICE_ACCOUNT"],
-        scopes=scopes
-    )
+
+    # Can be AttrDict or str
+    raw_secret = st.secrets["GOOGLE_SERVICE_ACCOUNT"]
+
+    # If it's a string, parse it (you used triple quotes and escaped JSON)
+    if isinstance(raw_secret, str):
+        service_account_info = json.loads(raw_secret)
+    else:
+        service_account_info = dict(raw_secret)  # Convert AttrDict to dict if needed
+
+    creds = Credentials.from_service_account_info(service_account_info, scopes=scopes)
     return gspread.authorize(creds)
 
 # ✅ Open the sheet using sheet ID from secrets

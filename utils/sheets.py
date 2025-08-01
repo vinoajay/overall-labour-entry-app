@@ -58,7 +58,11 @@ def load_sheet(sheet_id=None):
     sheet = gc.open_by_key(sheet_id)
     logger.info("✅ Sheet loaded successfully.")
     return sheet
-
+# ✅ NEW: Cache list of ENTRY tabs only
+@st.cache_data(ttl=3600)
+def get_entry_tabs(sheet):
+    logger.info("🔍 Filtering ENTRY tabs...")
+    return [ws.title for ws in sheet.worksheets() if "ENTRY" in ws.title.upper()]
 
 @st.cache_data(ttl=3600)
 def load_meta_info(_sheet=None):
@@ -82,13 +86,17 @@ def load_meta_info(_sheet=None):
 
 @st.cache_data(ttl=3600)
 def load_sheet_dates(_sheet=None):
-    sheet = _sheet
-    logger.info("🔄 Scanning worksheets for date columns...")
-    if sheet is None:
-        sheet = load_sheet()
+    if _sheet is None:
+        _sheet = load_sheet()
+    
+    logger.info("🔄 Scanning only ENTRY worksheets for date columns...")
+    entry_tabs = get_entry_tabs(_sheet)
     all_dates = {}
 
-    for worksheet in sheet.worksheets():
+    for worksheet in _sheet.worksheets():
+        if worksheet.title not in entry_tabs:
+            continue
+
         logger.info(f"🧾 Checking tab: {worksheet.title}")
         values = worksheet.row_values(1)
         for col_idx, val in enumerate(values[3:], start=4):

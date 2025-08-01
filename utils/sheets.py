@@ -4,6 +4,7 @@ import gspread
 from dotenv import load_dotenv
 from rapidfuzz import process
 import streamlit as st  # Required for caching
+from google.oauth2.service_account import Credentials
 
 load_dotenv()
 SHEET_ID = os.getenv("GOOGLE_SHEET_ID")
@@ -11,7 +12,9 @@ SHEET_ID = os.getenv("GOOGLE_SHEET_ID")
 # ⚙️ Sheet loading - not cached (used once and passed around)
 def load_sheet():
     print("🔄 Loading sheet...")
-    gc = gspread.service_account(filename="credentials.json")
+    creds_dict = st.secrets["firebase"]  # 👈 From secrets.toml
+    creds = Credentials.from_service_account_info(dict(creds_dict))
+    gc = gspread.authorize(creds)
     sheet = gc.open_by_key(SHEET_ID)
     print("✅ Sheet loaded successfully.")
     return sheet
@@ -34,7 +37,6 @@ def load_meta_info():
         print(f"❌ Error loading Meta tab: {e}")
         return [], []
 
-# ✅ Also cached, only recalculates if cache expires
 @st.cache_data(ttl=3600)
 def load_sheet_dates():
     print("🔄 Scanning worksheets for date columns...")
@@ -107,7 +109,6 @@ def write_attendance(sheet, entries):
         row = None
         for idx, row_data in enumerate(rows, start=2):  # 1-based index + header
             if len(row_data) > 1 and row_data[1].strip().lower() == site.strip().lower():
-
                 row = idx
                 break
 

@@ -55,8 +55,8 @@ def load_sheet(sheet_id):
     return gc.open_by_key(sheet_id)
 
 
-# ✅ Cache list of ENTRY tabs only
-@st.cache_data(ttl=3600)
+
+
 def get_entry_tabs():
     # Note: Uses default sheet, OK since this is rarely called and not linked to selected month
     sheet = load_sheet(st.secrets["MASTER_SHEET_ID"])

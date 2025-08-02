@@ -12,7 +12,7 @@ logger = logging.getLogger(__name__)
 # 📌 Added for dynamic month support
 @st.cache_data(ttl=3600)
 def get_month_to_sheetid_map():
-    client = get_gspread_client()  # ✅ Use correct scoped client
+    client = get_gspread_client()
     master_sheet_id = st.secrets["MASTER_SHEET_ID"]
     sheet = client.open_by_key(master_sheet_id).sheet1
 
@@ -49,27 +49,25 @@ def get_gspread_client():
     creds = Credentials.from_service_account_info(service_account_info, scopes=scopes)
     return gspread.authorize(creds)
 
-# 📌 Modified: Now accepts optional sheet_id (default uses static one)
-def load_sheet(sheet_id=None):
-    logger.info("🔄 Loading sheet...")
-    gc = get_gspread_client()
-    if not sheet_id:
-        sheet_id = st.secrets["GOOGLE_SHEET_ID"]
-    sheet = gc.open_by_key(sheet_id)
-    logger.info("✅ Sheet loaded successfully.")
-    return sheet
-# ✅ NEW: Cache list of ENTRY tabs only
+# 📌 Modified: Requires sheet_id to be passed (no fallback unless explicitly added)
+def load_sheet(sheet_id):
+    gc = gspread.service_account(filename="credentials.json")
+    return gc.open_by_key(sheet_id)
+
+
+# ✅ Cache list of ENTRY tabs only
 @st.cache_data(ttl=3600)
-def get_entry_tabs(sheet):
+def get_entry_tabs():
+    # Note: Uses default sheet, OK since this is rarely called and not linked to selected month
+    sheet = load_sheet(st.secrets["MASTER_SHEET_ID"])
     logger.info("🔍 Filtering ENTRY tabs...")
     return [ws.title for ws in sheet.worksheets() if "ENTRY" in ws.title.upper()]
 
+# ✅ FIXED: Now uses passed-in sheet, no fallback
 @st.cache_data(ttl=3600)
-def load_meta_info(_sheet=None):
+def load_meta_info(_sheet):
     sheet = _sheet
     logger.info("🔄 Loading Meta tab info...")
-    if sheet is None:
-        sheet = load_sheet()
     try:
         meta = sheet.worksheet("Meta")
         data = meta.get_all_records()
@@ -83,32 +81,23 @@ def load_meta_info(_sheet=None):
         logger.error(f"❌ Error loading Meta tab: {e}")
         return [], []
 
-
+# ✅ FIXED: Now uses passed-in sheet
 @st.cache_data(ttl=3600)
-def load_sheet_dates(_sheet=None):
-    if _sheet is None:
-        _sheet = load_sheet()
-    
-    logger.info("🔄 Scanning only ENTRY worksheets for date columns...")
-    entry_tabs = get_entry_tabs(_sheet)
-    all_dates = {}
-
-    for worksheet in _sheet.worksheets():
-        if worksheet.title not in entry_tabs:
-            continue
-
-        logger.info(f"🧾 Checking tab: {worksheet.title}")
-        values = worksheet.row_values(1)
-        for col_idx, val in enumerate(values[3:], start=4):
-            if val:
-                try:
-                    date_obj = datetime.datetime.strptime(val.strip(), "%d-%b-%Y")
-                    all_dates[val.strip()] = col_idx
-                except Exception:
-                    continue
-
-    logger.info(f"📅 Found {len(all_dates)} unique dates.")
-    return list(all_dates.keys())
+def load_sheet_dates(_sheet):
+    try:
+        meta_ws = _sheet.worksheet("Meta")
+        date_col = meta_ws.col_values(2)[1:]  # Column B, skip header
+        dates = []
+        for val in date_col:
+            try:
+                date_obj = datetime.datetime.strptime(val.strip(), "%d-%b-%Y")
+                dates.append(date_obj.strftime("%d-%b-%Y"))  # Normalize format
+            except Exception:
+                continue
+        return sorted(set(dates))
+    except Exception as e:
+        logger.error(f"⚠️ Error reading dates from Meta tab: {e}")
+        return []
 
 
 def find_site_row(worksheet, site_name):
@@ -120,7 +109,6 @@ def find_site_row(worksheet, site_name):
         return idx + 3
     return None
 
-
 def find_date_columns(worksheet, target_date_str):
     logger.info(f"🔍 Looking for date: {target_date_str}")
     row = worksheet.row_values(1)
@@ -131,7 +119,6 @@ def find_date_columns(worksheet, target_date_str):
             return col + 1, col + 2
     logger.info(f"❌ Date '{target_date_str}' not found.")
     return None, None
-
 
 def write_attendance(sheet, entries):
     success_messages = []
@@ -158,7 +145,8 @@ def write_attendance(sheet, entries):
             success_messages.append(msg)
             continue
 
-        headers = data[0]
+        headers = [str(h).strip().lstrip("0").replace(" 0", " ") for h in data[0]]
+        date = date.lstrip("0").replace(" 0", " ")
         rows = data[1:]
 
         row = None
@@ -167,7 +155,7 @@ def write_attendance(sheet, entries):
                 row = idx
                 break
 
-        if not row:
+        if row is None:
             msg = f"❌ Site '{site}' not found in tab '{tab}'"
             logger.warning(msg)
             success_messages.append(msg)
@@ -182,7 +170,7 @@ def write_attendance(sheet, entries):
             success_messages.append(msg)
             continue
 
-        if "M" in attendance:
+        if "M" in attendance and attendance["M"]:
             try:
                 worksheet.update_cell(row, m_col, attendance["M"])
                 msg = f"✅ Updated M ({attendance['M']}) at row {row}, col {m_col} in '{tab}'"
@@ -193,7 +181,7 @@ def write_attendance(sheet, entries):
                 logger.error(msg)
                 success_messages.append(msg)
 
-        if "H" in attendance:
+        if "H" in attendance and attendance["H"]:
             try:
                 worksheet.update_cell(row, h_col, attendance["H"])
                 msg = f"✅ Updated H ({attendance['H']}) at row {row}, col {h_col} in '{tab}'"

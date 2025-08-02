@@ -51,8 +51,9 @@ def get_gspread_client():
 
 # 📌 Modified: Requires sheet_id to be passed (no fallback unless explicitly added)
 def load_sheet(sheet_id):
-    gc = gspread.service_account(filename="credentials.json")
+    gc = get_gspread_client()
     return gc.open_by_key(sheet_id)
+
 
 
 

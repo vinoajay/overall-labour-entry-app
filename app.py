@@ -25,6 +25,10 @@ if selected_month:
     sheet = load_sheet(selected_sheet_id)
 
     # 📌 Step 2: Load dynamic meta info + date options
+    # 🔁 Add refresh button BEFORE loading meta info
+if st.button("🔁 Refresh Site/Team List"):
+    st.cache_data.clear()
+    st.experimental_rerun()
     meta_tabs, meta_sites = load_meta_info(selected_sheet_id)
     all_dates = load_sheet_dates(selected_sheet_id)
 

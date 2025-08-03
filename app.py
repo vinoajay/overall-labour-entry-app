@@ -24,57 +24,58 @@ if selected_month:
     selected_sheet_id = month_to_id[selected_month]
     sheet = load_sheet(selected_sheet_id)
 
-    # 📌 Step 2: Load dynamic meta info + date options
-    # 🔁 Add refresh button BEFORE loading meta info
+   # 🔁 Add refresh button BEFORE loading meta info
 if st.button("🔁 Refresh Site/Team List"):
     st.cache_data.clear()
-    st.experimental_rerun()
-    meta_tabs, meta_sites = load_meta_info(selected_sheet_id)
-    all_dates = load_sheet_dates(selected_sheet_id)
+    st.rerun()  # ⛔ Nothing after this line is executed
 
-    
-    selected_date = st.selectbox("📆 Select Date", all_dates)
+# ✅ This is now run AFTER refresh is complete
+meta_tabs, meta_sites = load_meta_info(selected_sheet_id)
+all_dates = load_sheet_dates(selected_sheet_id)
 
-    all_entries = []
+# 📆 Date picker
+selected_date = st.selectbox("📆 Select Date", all_dates)
 
-    st.markdown("### 👤 Enter Labour-wise Attendance")
+all_entries = []
 
-    for labor_index in range(10):
-        with st.expander(f"Labour Entry {labor_index + 1}", expanded=False):
-            selected_tab = st.selectbox(
-                f"Select Team Tab (Labour {labor_index + 1})",
-                meta_tabs,
-                key=f"tab_{labor_index}"
+st.markdown("### 👤 Enter Labour-wise Attendance")
+
+for labor_index in range(10):
+    with st.expander(f"Labour Entry {labor_index + 1}", expanded=False):
+        selected_tab = st.selectbox(
+            f"Select Team Tab (Labour {labor_index + 1})",
+            meta_tabs,
+            key=f"tab_{labor_index}"
+        )
+
+        for site_index in range(10):
+            site_col = st.columns([3, 1, 1])
+
+            selected_site = site_col[0].selectbox(
+                f"Site {site_index + 1}",
+                meta_sites,
+                key=f"site_{labor_index}_{site_index}"
+            )
+            mason_count = site_col[1].number_input(
+                "M", min_value=0, step=1, key=f"m_{labor_index}_{site_index}"
+            )
+            helper_count = site_col[2].number_input(
+                "H", min_value=0, step=1, key=f"h_{labor_index}_{site_index}"
             )
 
-            for site_index in range(10):
-                site_col = st.columns([3, 1, 1])
+            if mason_count > 0 or helper_count > 0:
+                entry = {
+                    "tab": selected_tab,
+                    "site": selected_site,
+                    "date": selected_date,
+                    "attendance": {}
+                }
+                if mason_count > 0:
+                    entry["attendance"]["M"] = mason_count
+                if helper_count > 0:
+                    entry["attendance"]["H"] = helper_count
 
-                selected_site = site_col[0].selectbox(
-                    f"Site {site_index + 1}",
-                    meta_sites,
-                    key=f"site_{labor_index}_{site_index}"
-                )
-                mason_count = site_col[1].number_input(
-                    "M", min_value=0, step=1, key=f"m_{labor_index}_{site_index}"
-                )
-                helper_count = site_col[2].number_input(
-                    "H", min_value=0, step=1, key=f"h_{labor_index}_{site_index}"
-                )
-
-                if mason_count > 0 or helper_count > 0:
-                    entry = {
-                        "tab": selected_tab,
-                        "site": selected_site,
-                        "date": selected_date,
-                        "attendance": {}
-                    }
-                    if mason_count > 0:
-                        entry["attendance"]["M"] = mason_count
-                    if helper_count > 0:
-                        entry["attendance"]["H"] = helper_count
-
-                    all_entries.append(entry)
+                all_entries.append(entry)
 
     # ✅ Preview summary
     st.markdown("### ✅ Summary of Entries")

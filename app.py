@@ -58,10 +58,10 @@ for labor_index in range(10):
             )
 
             mason_count = site_col[1].number_input(
-                "M", min_value=0, step=1, key=f"m_{labor_index}_{site_index}"
+                "M", min_value=0.0, step=0.5, key=f"m_{labor_index}_{site_index}"
             )
             helper_count = site_col[2].number_input(
-                "H", min_value=0, step=1, key=f"h_{labor_index}_{site_index}"
+                "H", min_value=0.0, step=0.5, key=f"h_{labor_index}_{site_index}"
             )
 
             if mason_count > 0 or helper_count > 0:

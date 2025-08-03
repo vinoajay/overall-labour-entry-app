@@ -21,8 +21,8 @@ if selected_month:
     sheet = load_sheet(selected_sheet_id)
 
     # 📌 Step 2: Load dynamic meta info + date options
-    meta_tabs, meta_sites = load_meta_info(sheet)
-    all_dates = load_sheet_dates(_sheet=sheet)
+    meta_tabs, meta_sites = load_meta_info(selected_sheet_id)
+    all_dates = load_sheet_dates(selected_sheet_id)
 
     
     selected_date = st.selectbox("📆 Select Date", all_dates)

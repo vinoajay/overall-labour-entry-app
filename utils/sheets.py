@@ -66,8 +66,8 @@ def get_entry_tabs():
 
 # ✅ FIXED: Now uses passed-in sheet, no fallback
 @st.cache_data(ttl=3600)
-def load_meta_info(_sheet):
-    sheet = _sheet
+def load_meta_info(sheet_id: str):
+    sheet = load_sheet(sheet_id)
     logger.info("🔄 Loading Meta tab info...")
     try:
         meta = sheet.worksheet("Meta")
@@ -84,9 +84,10 @@ def load_meta_info(_sheet):
 
 # ✅ FIXED: Now uses passed-in sheet
 @st.cache_data(ttl=3600)
-def load_sheet_dates(_sheet):
+def load_sheet_dates(sheet_id: str):
+    sheet = load_sheet(sheet_id)
     try:
-        meta_ws = _sheet.worksheet("Meta")
+        meta_ws = sheet.worksheet("Meta")
         date_col = meta_ws.col_values(2)[1:]  # Column B, skip header
         dates = []
         for val in date_col:

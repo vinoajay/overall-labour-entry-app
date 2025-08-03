@@ -24,7 +24,7 @@ if selected_month:
     selected_sheet_id = month_to_id[selected_month]
     sheet = load_sheet(selected_sheet_id)
 
-   # 🔁 Add refresh button BEFORE loading meta info
+# 🔁 Add refresh button BEFORE loading meta info
 if st.button("🔁 Refresh Site/Team List"):
     st.cache_data.clear()
     st.rerun()  # ⛔ Nothing after this line is executed
@@ -52,10 +52,11 @@ for labor_index in range(10):
             site_col = st.columns([3, 1, 1])
 
             selected_site = site_col[0].selectbox(
-                f"Site {site_index + 1}",
+                f"Labour {labor_index + 1} - Site {site_index + 1}",
                 meta_sites,
                 key=f"site_{labor_index}_{site_index}"
             )
+
             mason_count = site_col[1].number_input(
                 "M", min_value=0, step=1, key=f"m_{labor_index}_{site_index}"
             )
@@ -77,28 +78,28 @@ for labor_index in range(10):
 
                 all_entries.append(entry)
 
-    # ✅ Preview summary
-    st.markdown("### ✅ Summary of Entries")
-    if all_entries:
-        st.json(all_entries)
+# ✅ Preview summary — OUTSIDE the loop
+st.markdown("### ✅ Summary of Entries")
+if all_entries:
+    st.json(all_entries)
 
-    # ✅ Final message + submit
-    if all_entries:
-        st.markdown("### ✉️ Final Message to Write")
-        final_message = ""
-        for entry in all_entries:
-            line = f"{entry['tab']} - {entry['site']} - {entry['date']}: "
-            line += " ".join([f"{k}:{v}" for k, v in entry['attendance'].items()])
-            final_message += line + "\n"
+# ✅ Final message + submit — OUTSIDE the loop
+if all_entries:
+    st.markdown("### ✉️ Final Message to Write")
+    final_message = ""
+    for entry in all_entries:
+        line = f"{entry['tab']} - {entry['site']} - {entry['date']}: "
+        line += " ".join([f"{k}:{v}" for k, v in entry['attendance'].items()])
+        final_message += line + "\n"
 
-        st.text_area("Message Preview", final_message.strip(), height=200)
+    st.text_area("Message Preview", final_message.strip(), height=200)
 
-        if st.button("✅ Send to Google Sheet"):
-            log = write_attendance(sheet, all_entries)
+    if st.button("✅ Send to Google Sheet"):
+        log = write_attendance(sheet, all_entries)
 
-            st.text_area("📝 Update Log", log, height=300)
+        st.text_area("📝 Update Log", log, height=300)
 
-            if "✅" in log:
-                st.success("✅ Entries processed. Check log below for details.")
-            else:
-                st.error("❌ Some entries failed. Check log below.")
+        if "✅" in log:
+            st.success("✅ Entries processed. Check log below for details.")
+        else:
+            st.error("❌ Some entries failed. Check log below.")

@@ -10,6 +10,13 @@ from utils.sheets import (
 import datetime
 import gspread
 from rapidfuzz import process
+import os
+
+# Detect ping request
+params = st.query_params
+if "ping" in params:
+    st.write("✅ App is alive")
+    st.stop()
 
 st.set_page_config(page_title="Labour Entry Bot", layout="wide")
 

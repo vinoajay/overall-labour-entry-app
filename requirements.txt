@@ -1,36 +1,35 @@
-# Upgrade pip first (important for some cloud hosts)
 pip>=25.2
 
-# 🔮 Core LLM + LangChain
+# Core LLM + LangChain
 openai==1.51.2
 langchain==0.2.16
 langchain-community==0.2.16
 
-# 📦 Vector store & embeddings
+# Vector store & embeddings
 chromadb==0.5.5
 tiktoken==0.7.0
 faiss-cpu==1.8.0.post1
 
-# 📊 Google Sheets (Streamlit-friendly)
+# Google Sheets (Streamlit-friendly)
 gspread==6.1.2
 google-auth==2.35.0
 
-# 🧰 Utilities
+# Utilities
 python-dotenv==1.0.1
 rapidfuzz==3.10.0
-pydantic==1.10.15  # ✅ required for LangChain compatibility
+pydantic==1.10.15
 
-# 🖥️ Streamlit App
+# Streamlit App
 streamlit==1.39.0
 
-# 🕰️ Optional date & text processing
+# Optional date & text processing
 dateparser==1.2.0
 
-# 🔊 Audio/Speech (optional)
+# Audio/Speech
 pydub==0.25.1
 gTTS==2.5.3
 
-# Explicit pins to avoid Streamlit dependency issues
+# Explicit pins to avoid uninstall/reinstall loop
 pygments==2.19.2
 markdown-it-py==4.0.0
 mdurl==0.1.2

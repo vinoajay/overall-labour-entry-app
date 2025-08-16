@@ -6,7 +6,7 @@ langchain-community
 # 📦 Vector store & embeddings
 chromadb
 tiktoken
-faiss-cpu
+faiss-cpu==1.7.4
 
 # 📊 Google Sheets (Streamlit-friendly)
 gspread
@@ -25,4 +25,4 @@ dateparser
 
 # 🔊 Audio/Speech (for voice bots, optional)
 pydub
-gTTS this is my requirement 
+gTTS

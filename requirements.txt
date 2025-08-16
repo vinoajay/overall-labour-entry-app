@@ -1,36 +1,28 @@
-pip>=25.2
+# 🔮 Core LLM + LangChain
+openai
+langchain
+langchain-community
 
-# Core LLM + LangChain
-openai==1.51.2
-langchain==0.2.16
-langchain-community==0.2.16
+# 📦 Vector store & embeddings
+chromadb
+tiktoken
+faiss-cpu
 
-# Vector store & embeddings
-chromadb==0.5.5
-tiktoken==0.7.0
-faiss-cpu==1.8.0.post1
+# 📊 Google Sheets (Streamlit-friendly)
+gspread
+google-auth  # ✅ Replaces oauth2client (which is deprecated)
 
-# Google Sheets (Streamlit-friendly)
-gspread==6.1.2
-google-auth==2.35.0
+# 🧰 Utilities
+python-dotenv  # optional, not needed if using st.secrets
+rapidfuzz
+pydantic<2.0  # ✅ Required for LangChain compatibility
 
-# Utilities
-python-dotenv==1.0.1
-rapidfuzz==3.10.0
-pydantic==1.10.15
+# 🖥️ Streamlit App
+streamlit
 
-# Streamlit App
-streamlit==1.39.0
+# 🕰️ Optional date & text processing
+dateparser
 
-# Optional date & text processing
-dateparser==1.2.0
-
-# Audio/Speech
-pydub==0.25.1
-gTTS==2.5.3
-
-# Explicit pins to avoid uninstall/reinstall loop
-pygments==2.19.2
-markdown-it-py==4.0.0
-mdurl==0.1.2
-rich==14.1.0
+# 🔊 Audio/Speech (for voice bots, optional)
+pydub
+gTTS this is my requirement 

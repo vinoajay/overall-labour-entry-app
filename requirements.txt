@@ -6,8 +6,6 @@ langchain-community==0.2.9
 # 📦 Vector store & embeddings
 chromadb==0.5.5
 tiktoken==0.7.0
-# remove faiss-cpu unless absolutely needed
-# faiss-cpu==1.7.4  
 
 # 📊 Google Sheets (Streamlit-friendly)
 gspread==6.1.2
@@ -16,7 +14,7 @@ google-auth==2.33.0
 # 🧰 Utilities
 python-dotenv==1.0.1  
 rapidfuzz==3.10.0
-pydantic==1.10.13  
+pydantic==2.8.2  
 
 # 🖥️ Streamlit App
 streamlit==1.37.0  

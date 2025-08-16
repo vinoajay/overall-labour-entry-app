@@ -1,28 +1,29 @@
 # 🔮 Core LLM + LangChain
-openai
-langchain
-langchain-community
+openai==1.37.1
+langchain==0.2.10
+langchain-community==0.2.9
 
 # 📦 Vector store & embeddings
-chromadb
-tiktoken
-faiss-cpu==1.7.4
+chromadb==0.5.5
+tiktoken==0.7.0
+# remove faiss-cpu unless absolutely needed
+# faiss-cpu==1.7.4  
 
 # 📊 Google Sheets (Streamlit-friendly)
-gspread
-google-auth  # ✅ Replaces oauth2client (which is deprecated)
+gspread==6.1.2
+google-auth==2.33.0  
 
 # 🧰 Utilities
-python-dotenv  # optional, not needed if using st.secrets
-rapidfuzz
-pydantic<2.0  # ✅ Required for LangChain compatibility
+python-dotenv==1.0.1  
+rapidfuzz==3.10.0
+pydantic==1.10.13  
 
 # 🖥️ Streamlit App
-streamlit
+streamlit==1.37.0  
 
 # 🕰️ Optional date & text processing
-dateparser
+dateparser==1.2.0  
 
-# 🔊 Audio/Speech (for voice bots, optional)
-pydub
-gTTS
+# 🔊 Audio/Speech (optional)
+pydub==0.25.1
+gTTS==2.5.3
